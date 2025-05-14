@@ -1,0 +1,199 @@
+<!-- Archivo: index.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frutalia - Pedido de Jugos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    form {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #27ae60;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #219150;
+    }
+
+    .oculto {
+      display: none;
+    }
+
+    #mensajeExito {
+      text-align: center;
+      margin-top: 20px;
+      background-color: #d4edda;
+      padding: 15px;
+      border-radius: 8px;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #2c3e50;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Frutalia - Pedido en Línea</h1>
+    <form id="pedidoForm">
+      <label for="nombre">Nombre del cliente:</label>
+      <input type="text" id="nombre" name="Nombre del cliente" required>
+
+      <label for="telefono">Teléfono:</label>
+      <input type="tel" id="telefono" name="Teléfono" required>
+
+      <label for="sabor">Sabor del jugo:</label>
+      <select id="sabor" name="Sabor del jugo" required>
+        <option value="">Selecciona un sabor</option>
+        <option value="naranja">Naranja</option>
+        <option value="mango">Mango</option>
+        <option value="fresa">Fresa</option>
+        <option value="piña">Piña</option>
+      </select>
+
+      <label for="tamano">Tamaño:</label>
+      <select id="tamano" name="Tamaño" required>
+        <option value="">Selecciona un tamaño</option>
+        <option value="chico">Chico</option>
+        <option value="mediano">Mediano</option>
+        <option value="grande">Grande</option>
+      </select>
+
+      <label for="comentarios">Comentarios adicionales:</label>
+      <textarea id="comentarios" name="Comentarios adicionales" rows="3"></textarea>
+
+      <button type="submit">Enviar Pedido</button>
+    </form>
+
+    <div id="mensajeExito" class="oculto">
+      <p>Tu pedido ha sido enviado con éxito, pasa a recogerlo en 10 minutos.<br>¡Frutalia agradece tu preferencia!</p>
+    </div>
+
+    <section>
+      <h2>Pedidos Registrados</h2>
+      <table id="tablaPedidos">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Sabor del jugo</th>
+            <th>Tamaño</th>
+            <th>Comentarios adicionales</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzGHVxhkW3F9TuOROD1R_ILKw6ywl-j5mwAGwueaVVAaANnQF80bXEOud7tk6OMe6lCDw/exec';
+
+    document.getElementById('pedidoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+
+      const datos = {
+        'Nombre del cliente': form.nombre.value,
+        'Teléfono': form.telefono.value,
+        'Sabor del jugo': form.sabor.value,
+        'Tamaño': form.tamano.value,
+        'Comentarios adicionales': form.comentarios.value
+      };
+
+      try {
+        const respuesta = await fetch(scriptURL, {
+          method: 'POST',
+          body: JSON.stringify(datos),
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (respuesta.ok) {
+          document.getElementById('mensajeExito').classList.remove('oculto');
+          form.reset();
+          cargarPedidos();
+        }
+      } catch (error) {
+        alert('Hubo un error al enviar el pedido. Intenta de nuevo.');
+        console.error('Error:', error);
+      }
+    });
+
+    async function cargarPedidos() {
+      try {
+        const response = await fetch(scriptURL);
+        const pedidos = await response.json();
+        const tbody = document.querySelector('#tablaPedidos tbody');
+        tbody.innerHTML = '';
+        pedidos.forEach(pedido => {
+          const fila = document.createElement('tr');
+          fila.innerHTML = `
+            <td>${pedido['Nombre del cliente']}</td>
+            <td>${pedido['Teléfono']}</td>
+            <td>${pedido['Sabor del jugo']}</td>
+            <td>${pedido['Tamaño']}</td>
+            <td>${pedido['Comentarios adicionales']}</td>
+          `;
+          tbody.appendChild(fila);
+        });
+      } catch (error) {
+        console.error('Error al cargar pedidos:', error);
+      }
+    }
+
+    window.onload = cargarPedidos;
+  </script>
+</body>
+</html>
